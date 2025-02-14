@@ -6,6 +6,7 @@
 
 ### **Student:**  
 Edward Gonzalez  
+Collaborating with Kazi Islam
 
 ### **Advisor:**  
 Dr. David Smith  
