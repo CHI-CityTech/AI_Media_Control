@@ -1,5 +1,5 @@
 from openai import OpenAI
-#making an api call to openai to see if it works. Requires payment of tokens
+#making an api call to openai to see if it works
 client = OpenAI(
   api_key="API_KEY_HERE"
 )
