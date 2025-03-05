@@ -1,7 +1,9 @@
 from openai import OpenAI
+import os
+
 #making an api call to openai to see if it works
 client = OpenAI(
-  api_key="API_KEY_HERE"
+  api_key=os.getenv("API_KEY_HERE")
 )
 
 completion = client.chat.completions.create(
