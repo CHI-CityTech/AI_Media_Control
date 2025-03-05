@@ -1,8 +1,9 @@
 # Set your OpenAI API key
 from openai import OpenAI
-
+# send a file of a picture and let it describe what it is back to me 
 client = OpenAI(
-  api_key="API_KEY_HERE")
+  api_key="API_KEY_HERE"
+)
 
 completion = client.chat.completions.create(
   model="gpt-3.5-turbo",
