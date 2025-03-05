@@ -8,7 +8,8 @@ completion = client.chat.completions.create(
   model="gpt-3.5-turbo",
   store=True,
   messages=[
-    {"role": "user", "content": "write a haiku about ai"}
+    {"role": "system", "content": "You are a helpful assistant. Help me with my math homework!"}, # <-- This is the system message that provides context to the model
+    {"role": "user", "content": "Hello! Could you solve 2+2?"}
   ]
 )
 
