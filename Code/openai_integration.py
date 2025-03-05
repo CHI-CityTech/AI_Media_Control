@@ -1,17 +1,15 @@
+# Set your OpenAI API key
 from openai import OpenAI
-import os
 
-#making an api call to openai to see if it works
 client = OpenAI(
-  api_key=os.getenv("API_KEY_HERE")
-)
+  api_key="API_KEY_HERE")
 
 completion = client.chat.completions.create(
-  model="gpt-4o-mini",
+  model="gpt-3.5-turbo",
   store=True,
   messages=[
     {"role": "user", "content": "write a haiku about ai"}
   ]
 )
 
-print(completion.choices[0].message)
+print(completion.choices[0].message);
