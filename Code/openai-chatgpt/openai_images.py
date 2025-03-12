@@ -5,7 +5,7 @@ import base64
 
 #open ai key here
 client = OpenAI(
-  api_key="API_KEY_HERE" 
+  api_key="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" 
 
 )
 
@@ -25,7 +25,7 @@ base64_image = encode_image(IMAGE_PATH)
 response = client.chat.completions.create(
     model="gpt-4o-mini",
     messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "system", "content": "You are a helpful assistant. Please decribe the image with as much detail as possible."},
         {"role": "user", "content": [
             {"type": "image_url", "image_url": {
                 "url": f"data:image/png;base64,{base64_image}"}
