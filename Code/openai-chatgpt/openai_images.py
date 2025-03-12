@@ -5,7 +5,7 @@ import base64
 
 #open ai key here
 client = OpenAI(
-  api_key="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" 
+  api_key="api_key_here" 
 
 )
 
