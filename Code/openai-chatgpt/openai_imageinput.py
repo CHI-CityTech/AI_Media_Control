@@ -9,26 +9,26 @@ client = OpenAI(
     api_key="api_key_here"
 )
 
-# Define your assistant's ID
+# assistant's ID here
 assistant_id = "assistant_id_here"
 
-# Create a GUI window to enter system instructions
+# Create a GUI window to enter system instructions here
 root = tk.Tk()
-root.withdraw()  # Hide the main window
+root.withdraw()  # Hides the main window
 system_instruction = simpledialog.askstring("System Instruction", "Enter system instructions for the AI:")
 
 if not system_instruction:
     print("No instructions provided. Exiting.")
     exit()
 
-# Open file dialog to select image
+# Open file extensions to select image
 IMAGE_PATH = filedialog.askopenfilename(title="Select an Image", filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp")])
 
 if not IMAGE_PATH:
     print("No file selected. Exiting.")
     exit()
 
-# Preview image for context
+#Image to show AI for context/content
 display(Image(IMAGE_PATH))
 
 # Open the image file and encode it as a base64 string
@@ -41,10 +41,10 @@ base64_image = encode_image(IMAGE_PATH)
 response = client.chat.completions.create(
     model="gpt-4o-mini",
     messages=[
-        {"role": "system", "content": system_instruction},
+        {"role": "system", "content": system_instruction}, #AI role and instructions are here to be call from OpenAI api
         {"role": "user", "content": [
             {"type": "image_url", "image_url": {
-                "url": f"data:image/png;base64,{base64_image}"}
+                "url": f"data:image/png;base64,{base64_image}"}  #the users info and image bath is here to be analyze
             }
         ]}
     ],
