@@ -22,7 +22,7 @@ if not system_instruction:
     exit()
 
 # Open file extensions to select image
-IMAGE_PATH = filedialog.askopenfilename(title="Select an Image", filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp")])
+IMAGE_PATH = filedialog.askopenfilename(title="Select an Image", filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp*.tiff;*")])
 
 if not IMAGE_PATH:
     print("No file selected. Exiting.")
