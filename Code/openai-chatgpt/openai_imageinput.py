@@ -21,32 +21,37 @@ if not system_instruction:
     print("No instructions provided. Exiting.")
     exit()
 
-# Open file extensions to select image
-IMAGE_PATH = filedialog.askopenfilename(title="Select an Image", filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp*.tiff;*")])
+# Open file extensions to select images
+IMAGE_PATHS = filedialog.askopenfilenames(title="Select Images", filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.tiff;*")])
 
-if not IMAGE_PATH:
-    print("No file selected. Exiting.")
+if not IMAGE_PATHS:
+    print("No files selected. Exiting.")
     exit()
 
-#Image to show AI for context/content
-display(Image(IMAGE_PATH))
+# Display selected images for context/content
+for image_path in IMAGE_PATHS:
+    display(Image(image_path))
 
-# Open the image file and encode it as a base64 string
+# Function to encode images to base64
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode("utf-8")
 
-base64_image = encode_image(IMAGE_PATH)
+# Encode all selected images that the user picks
+encoded_images = [encode_image(image_path) for image_path in IMAGE_PATHS]
 
+# Prepare messages to send to the AI, including the encoded images
+image_messages = [
+    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded_image}"}}
+    for encoded_image in encoded_images
+]
+
+# Sending to the OpenAI API
 response = client.chat.completions.create(
     model="gpt-4o-mini",
     messages=[
-        {"role": "system", "content": system_instruction}, #AI role and instructions are here to be call from OpenAI api
-        {"role": "user", "content": [
-            {"type": "image_url", "image_url": {
-                "url": f"data:image/png;base64,{base64_image}"}  #the users info and image bath is here to be analyze
-            }
-        ]}
+        {"role": "system", "content": system_instruction},
+        {"role": "user", "content": image_messages}
     ],
 )
 
