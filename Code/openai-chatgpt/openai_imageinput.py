@@ -3,6 +3,7 @@ from openai import OpenAI
 import base64
 import tkinter as tk
 from tkinter import filedialog, simpledialog
+from PIL import Image as PILImage, ImageEnhance
 
 # OpenAI key here
 client = OpenAI(
@@ -34,8 +35,11 @@ for image_path in IMAGE_PATHS:
 
 # Function to encode images to base64
 def encode_image(image_path):
+    Image = PILImage.open(image_path)
+    Image.show()
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode("utf-8")
+    
 
 # Encode all selected images that the user picks
 encoded_images = [encode_image(image_path) for image_path in IMAGE_PATHS]
