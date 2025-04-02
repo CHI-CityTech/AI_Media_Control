@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import filedialog, simpledialog
 from PIL import Image as PILImage, ImageEnhance
 import numpy as np
+import pickle # use to serial python objects
 from io import BytesIO
 
 # OpenAI key here
@@ -134,3 +135,13 @@ response = client.chat.completions.create(
 )
 
 print(response.choices[0].message.content)
+
+# contain the data in a serial later on to read it
+preferences = {
+    'system_instruction': system_instruction,
+    'image_action': action,
+    'image_params': params
+}
+
+with open('preferences.pkl', 'wb') as f:
+    pickle.dump(preferences, f)
