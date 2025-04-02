@@ -145,3 +145,4 @@ preferences = {
 
 with open('preferences.pkl', 'wb') as f:
     pickle.dump(preferences, f)
+
