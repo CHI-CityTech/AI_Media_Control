@@ -6,6 +6,7 @@ from tkinter import filedialog, simpledialog
 from PIL import Image as PILImage, ImageEnhance
 import numpy as np
 import pickle # use to serial python objects
+import json # save file as json
 from io import BytesIO
 
 # OpenAI key here
@@ -136,13 +137,28 @@ response = client.chat.completions.create(
 
 print(response.choices[0].message.content)
 
-# contain the data in a serial later on to read it
-preferences = {
-    'system_instruction': system_instruction,
-    'image_action': action,
-    'image_params': params
-}
+# Ask if the user wants to save the preferences and images
+save_option = simpledialog.askstring("Save", "Do you want to save your preferences in a file? (YES/NO)").lower()
 
-with open('preferences.pkl', 'wb') as f:
-    pickle.dump(preferences, f)
+if save_option == "yes":
+    # Save user preferences and image manipulation settings
+    preferences = {
+        "system_instruction": system_instruction,
+        "image_manipulation": {
+            "action": action,
+            "params": params
+        }
+    }
 
+    # Save preferences as config file
+    with open("config.json", "w") as config_file:
+        json.dump(preferences, config_file, indent=4)
+    
+    # Save images as serial file
+    with open("manipulated_images.pkl", "wb") as pkl_file:
+        pickle.dump(manipulated_images, pkl_file)
+    
+    print("Your Preferences and image(s) have been saved.")
+
+else:
+    print("Your data will not saved.")

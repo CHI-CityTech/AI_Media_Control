@@ -1,0 +1,7 @@
+{
+    "system_instruction": "more detail about image",
+    "image_manipulation": {
+        "action": "grayscale",
+        "params": null
+    }
+}
