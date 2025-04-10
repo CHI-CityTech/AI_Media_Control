@@ -3,7 +3,7 @@ from openai import OpenAI
 import base64
 import tkinter as tk
 from tkinter import filedialog, simpledialog
-from PIL import Image as PILImage, ImageEnhance
+from PIL import Image as PILImage, ImageEnhance #image to be manipulated
 import numpy as np
 import pickle  # use to serialize python objects
 import json  # save file as json
