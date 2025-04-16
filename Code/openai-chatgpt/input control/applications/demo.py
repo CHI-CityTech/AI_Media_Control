@@ -1,92 +1,44 @@
-from IPython.display import Image as IPyImage, display
-from openai import OpenAI
-import base64
+# programmed by Edward Gonzalez (github: egonzalez99)
+#below are the python 
 import tkinter as tk
-from tkinter import filedialog, simpledialog
-from PIL import Image as PILImage, ImageEnhance
+from tkinter import filedialog, messagebox, ttk
+from PIL import Image as PILImage, ImageEnhance, ImageTk
+import base64
 import numpy as np
 from io import BytesIO
+from openai import OpenAI
 
 # OpenAI client setup
-client = OpenAI(
-    api_key="api_key_here"  # Replace with your actual key
-)
-
-# Assistant ID (if needed)
+client = OpenAI(api_key="api_key_here")  # Replace with your key
+# assistant's ID here
 assistant_id = "assistant_id_here"
 
-# GUI for system instruction
-root = tk.Tk()
-root.withdraw()
-system_instruction = simpledialog.askstring("System Instruction", "Enter system instructions for the AI:")
+# Global variables
+selected_images = []
+manipulated_images = []
 
-if not system_instruction:
-    print("No instructions provided. Exiting.")
-    exit()
-
-# File picker
-IMAGE_PATHS = filedialog.askopenfilenames(
-    title="Select Images",
-    filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.tiff;*")]
-)
-
-if not IMAGE_PATHS:
-    print("No files selected. Exiting.")
-    exit()
-
-# Ask user for manipulation type
-action = simpledialog.askstring(
-    "Action",
-    "Enter manipulation type (resize, rotate, crop, brightness, contrast, grayscale, sepia):"
-)
-
-if not action:
-    print("No action selected. Exiting.")
-    exit()
-
-action = action.lower()
-params = None
-
-# Ask for manipulation parameters
-if action == "resize":
-    width = simpledialog.askinteger("Width", "Enter width:")
-    height = simpledialog.askinteger("Height", "Enter height:")
-    params = (width, height)
-elif action == "rotate":
-    angle = simpledialog.askinteger("Angle", "Enter angle to rotate:")
-    params = {"angle": angle}
-elif action == "crop":
-    left = simpledialog.askinteger("Left", "Enter left coordinate:")
-    upper = simpledialog.askinteger("Upper", "Enter upper coordinate:")
-    right = simpledialog.askinteger("Right", "Enter right coordinate:")
-    lower = simpledialog.askinteger("Lower", "Enter lower coordinate:")
-    params = (left, upper, right, lower)
-elif action in ["brightness", "contrast"]:
-    factor = simpledialog.askfloat("Factor", f"Enter {action} factor (e.g., 1.0 for original):")
-    params = {"factor": factor}
-
-# Function to manipulate and encode image
+# Function to manipulate image
 def manipulate_image(image_path, action, params=None):
     image = PILImage.open(image_path)
 
-    if action == "resize":
+    if action == "Resize":
         width, height = params
         image = image.resize((width, height))
-    elif action == "rotate":
+    elif action == "Rotate":
         angle = params.get("angle", 90)
         image = image.rotate(angle)
-    elif action == "crop":
+    elif action == "Crop":
         left, upper, right, lower = params
         image = image.crop((left, upper, right, lower))
-    elif action == "brightness":
+    elif action == "Brightness":
         enhancer = ImageEnhance.Brightness(image)
         image = enhancer.enhance(params["factor"])
-    elif action == "contrast":
+    elif action == "Contrast":
         enhancer = ImageEnhance.Contrast(image)
         image = enhancer.enhance(params["factor"])
-    elif action == "grayscale":
+    elif action == "Grayscale":
         image = image.convert("L")
-    elif action == "sepia":
+    elif action == "color filter":
         image = np.array(image)
         tr = np.array([0.393, 0.769, 0.189])
         tg = np.array([0.349, 0.686, 0.168])
@@ -95,36 +47,145 @@ def manipulate_image(image_path, action, params=None):
         image = np.clip(image, 0, 255).astype(np.uint8)
         image = PILImage.fromarray(image)
 
-    # Encode to base64
     buffered = BytesIO()
     image.save(buffered, format="PNG")
-    buffered.seek(0)
-    encoded = base64.b64encode(buffered.read()).decode("utf-8")
+    encoded = base64.b64encode(buffered.getvalue()).decode("utf-8")
     return encoded, image
 
-# Apply manipulation and show images
-manipulated_images = [
-    manipulate_image(path, action, params)
-    for path in IMAGE_PATHS
-]
+# UI logic
+def choose_images():
+    global selected_images
+    file_paths = filedialog.askopenfilenames(title="Select Images", filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.bmp;*.tiff")])
+    if file_paths:
+        selected_images = file_paths
+        listbox.delete(0, tk.END)
+        for path in selected_images:
+            listbox.insert(tk.END, path.split("/")[-1])
 
-for encoded_img, img in manipulated_images:
-    img.show()
-    display(IPyImage(data=img.tobytes()))
+def update_param_fields(event=None):
+    action = action_var.get()
+    for widget in params_frame.winfo_children():
+        widget.destroy()
 
-# Prepare messages for OpenAI
-image_messages = [
-    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded}"}}
-    for encoded, _ in manipulated_images
-]
+    if action == "Resize":
+        tk.Label(params_frame, text="Width:").grid(row=0, column=0)
+        tk.Entry(params_frame, textvariable=param1_var).grid(row=0, column=1)
+        tk.Label(params_frame, text="Height:").grid(row=1, column=0)
+        tk.Entry(params_frame, textvariable=param2_var).grid(row=1, column=1)
+    elif action == "Rotate":
+        tk.Label(params_frame, text="Angle:").grid(row=0, column=0)
+        tk.Entry(params_frame, textvariable=param1_var).grid(row=0, column=1)
+    elif action == "Crop":
+        for i, label in enumerate(["Left", "Top", "Right", "Bottom"]):
+            tk.Label(params_frame, text=label + ":").grid(row=i, column=0)
+            tk.Entry(params_frame, textvariable=crop_vars[i]).grid(row=i, column=1)
+    elif action in ["Brightness", "Contrast"]:
+        tk.Label(params_frame, text="Factor (e.g., 1.0):").grid(row=0, column=0)
+        tk.Entry(params_frame, textvariable=param1_var).grid(row=0, column=1)
+
+def apply_manipulation():
+    global manipulated_images
+    manipulated_images = []
+    action = action_var.get()
+
+    for path in selected_images:
+        if action == "Resize":
+            params = (int(param1_var.get()), int(param2_var.get()))
+        elif action == "Rotate":
+            params = {"angle": int(param1_var.get())}
+        elif action == "Crop":
+            params = tuple(int(var.get()) for var in crop_vars)
+        elif action in ["Brightness", "Contrast"]:
+            params = {"factor": float(param1_var.get())}
+        else:
+            params = None
+        encoded, img = manipulate_image(path, action, params)
+        manipulated_images.append((encoded, img))
+        preview_image(img)
+
+def preview_image(pil_img):
+    preview = PILImage.new("RGB", pil_img.size)
+    preview.paste(pil_img)
+    preview.thumbnail((200, 200))
+    img_tk = ImageTk.PhotoImage(preview)
+    img_label = tk.Label(image_frame, image=img_tk)
+    img_label.image = img_tk
+    img_label.pack(padx=5, pady=5)
+
+# system instructions for errors
+def send_to_openai():
+    if not manipulated_images:
+        messagebox.showwarning("Warning", "No images to send.")
+        return
+
+    system_instruction = system_input.get()
+    if not system_instruction:
+        messagebox.showwarning("Warning", "System instruction is required.")
+        return
+
+    image_messages = [
+        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded}"}}
+        for encoded, _ in manipulated_images
+    ]
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_instruction},
+                {"role": "user", "content": image_messages}
+            ],
+        )
+        output_box.delete(1.0, tk.END)
+        output_box.insert(tk.END, response.choices[0].message.content)
+    except Exception as e:
+        messagebox.showerror("API Error", str(e))
+
+# UI
+app = tk.Tk()
+app.title("Image Manipulation + AI")
+app.geometry("800x600")
+
+# Instruction input
+tk.Label(app, text="System Instruction for AI:").pack()
+system_input = tk.Entry(app, width=80)
+system_input.pack(pady=5)
+
+# Image selection
+tk.Button(app, text="Choose Image(s)", command=choose_images).pack(pady=5)
+listbox = tk.Listbox(app, width=60, height=5)
+listbox.pack()
+
+# Manipulation selection
+tk.Label(app, text="Manipulation:").pack()
+action_var = tk.StringVar()
+action_menu = ttk.Combobox(app, textvariable=action_var, state="readonly")
+action_menu["values"] = ["Resize", "Rotate", "Crop", "Brightness", "Contrast", "Grayscale", "Sepia"]
+action_menu.current(0)
+action_menu.pack()
+action_menu.bind("<<ComboboxSelected>>", update_param_fields)
+
+params_frame = tk.Frame(app)
+params_frame.pack(pady=5)
+
+param1_var = tk.StringVar()
+param2_var = tk.StringVar()
+crop_vars = [tk.StringVar() for _ in range(4)]
+
+# Apply button
+tk.Button(app, text="Apply Manipulation Change", command=apply_manipulation).pack(pady=10)
+
+# Preview area
+image_frame = tk.Frame(app)
+image_frame.pack(pady=10)
 
 # Send to OpenAI
-response = client.chat.completions.create(
-    model="gpt-4o-mini",
-    messages=[
-        {"role": "system", "content": system_instruction},
-        {"role": "user", "content": image_messages}
-    ],
-)
+tk.Button(app, text="Send to OpenAI AI", command=send_to_openai).pack(pady=5)
 
-print(response.choices[0].message.content)
+# Output from OpenAI
+tk.Label(app, text="Here is OpenAI's Response:").pack()
+output_box = tk.Text(app, height=8, width=90)
+output_box.pack(pady=5)
+
+update_param_fields()
+app.mainloop()
