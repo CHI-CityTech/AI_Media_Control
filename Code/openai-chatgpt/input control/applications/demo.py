@@ -17,6 +17,50 @@ assistant_id = "assistant_id_here"
 selected_images = []
 manipulated_images = []
 
+# 1. Function to analyze an image with AI (e.g., using CLIP for image analysis)
+def analyze_image_with_ai(image_path):
+    try:
+        # Open image and prepare for analysis
+        with open(image_path, 'rb') as img_file:
+            response = client.image.analysis.create(image=img_file)
+        return response
+    except Exception as e:
+        messagebox.showerror("An AI Error", f"Computation Error with image: {str(e)}")
+        return None
+
+# 2. Function to suggest manipulations based on AI analysis (brightness, color, etc.)
+def ai_edits(image_path):
+    analysis_response = analyze_image_with_ai(image_path)  # Use AI model to analyze image
+    if analysis_response:
+        # Hypothetical response structure from AI (e.g., if analysis contains "dark")
+        if 'dark' in analysis_response:
+            return "Increase brightness by 20%"
+        elif 'sunset' in analysis_response:
+            return "Applied filter"
+        else:
+            return "No edits"
+    return "Error with the image"
+
+# 3. Apply Style Transfer (e.g., artistic transformation)
+def ai_style(image_path):
+    try:
+        with open(image_path, 'rb') as img_file:
+            response = client.image.style_transfer.create(image=img_file, model="artistic-style")
+        return response["resulting_image"]
+    except Exception as e:
+        messagebox.showerror("An AI Error", f"Error applying style: {str(e)}")
+        return None
+
+# 4. Enhance image quality (e.g., noise reduction, sharpness, etc.)
+def enhancement(image_path):
+    try:
+        with open(image_path, 'rb') as img_file:
+            response = client.image.enhance.create(image=img_file)
+        return response["enhanced_image"]
+    except Exception as e:
+        messagebox.showerror("An AI Error", f"Error with enhancement: {str(e)}")
+        return None
+    
 # Function to manipulate image
 def manipulate_image(image_path, action, params=None):
     image = PILImage.open(image_path)
