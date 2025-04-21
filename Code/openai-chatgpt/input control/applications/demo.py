@@ -41,7 +41,7 @@ def ai_edits(image_path):
             return "No edits"
     return "Error with the image"
 
-# 3. Apply Style Transfer (e.g., artistic transformation)
+# 3. Apply Style (e.g., artistic style)
 def ai_style(image_path):
     try:
         with open(image_path, 'rb') as img_file:
@@ -51,7 +51,7 @@ def ai_style(image_path):
         messagebox.showerror("An AI Error", f"Error applying style: {str(e)}")
         return None
 
-# 4. Enhance image quality (e.g., noise reduction, sharpness, etc.)
+# 4. Enhance image (e.g., noise reduction, sharpness, etc.)
 def enhancement(image_path):
     try:
         with open(image_path, 'rb') as img_file:
