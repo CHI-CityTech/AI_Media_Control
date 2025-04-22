@@ -16,50 +16,6 @@ assistant_id = "assistant_id_here"
 # Global variables
 selected_images = []
 manipulated_images = []
-
-# 1. Function to analyze an image with AI (e.g., using CLIP for image analysis)
-def analyze_image_with_ai(image_path):
-    try:
-        # Open image and prepare for analysis
-        with open(image_path, 'rb') as img_file:
-            response = client.image.analysis.create(image=img_file)
-        return response
-    except Exception as e:
-        messagebox.showerror("An AI Error", f"Computation Error with image: {str(e)}")
-        return None
-
-# 2. Function to suggest manipulations based on AI analysis (brightness, color, etc.)
-def ai_edits(image_path):
-    analysis_response = analyze_image_with_ai(image_path)  # Use AI model to analyze image
-    if analysis_response:
-        # Hypothetical response structure from AI (e.g., if analysis contains "dark")
-        if 'dark' in analysis_response:
-            return "Increase brightness by 20%"
-        elif 'sunset' in analysis_response:
-            return "Applied filter"
-        else:
-            return "No edits"
-    return "Error with the image"
-
-# 3. Apply Style (e.g., artistic style)
-def ai_style(image_path):
-    try:
-        with open(image_path, 'rb') as img_file:
-            response = client.image.style_transfer.create(image=img_file, model="artistic-style")
-        return response["resulting_image"]
-    except Exception as e:
-        messagebox.showerror("An AI Error", f"Error applying style: {str(e)}")
-        return None
-
-# 4. Enhance image (e.g., noise reduction, sharpness, etc.)
-def enhancement(image_path):
-    try:
-        with open(image_path, 'rb') as img_file:
-            response = client.image.enhance.create(image=img_file)
-        return response["enhanced_image"]
-    except Exception as e:
-        messagebox.showerror("An AI Error", f"Error with enhancement: {str(e)}")
-        return None
     
 # Function to manipulate image
 def manipulate_image(image_path, action, params=None):
@@ -188,47 +144,86 @@ def send_to_openai():
 # UI
 app = tk.Tk()
 app.title("Image Manipulation + AI")
-app.geometry("800x600")
+app.geometry("850x850")
 
-# Instruction input
-tk.Label(app, text="System Instruction for AI:").pack()
-system_input = tk.Entry(app, width=80)
+# scroll setup
+main_canvas = tk.Canvas(app)
+main_scrollbar = tk.Scrollbar(app, orient="vertical", command=main_canvas.yview)
+main_scrollable_frame = tk.Frame(main_canvas)
+
+main_scrollable_frame.bind(
+    "<Configure>",
+    lambda e: main_canvas.configure(
+        scrollregion=main_canvas.bbox("all")
+    )
+)
+
+main_canvas.create_window((0, 0), window=main_scrollable_frame, anchor="nw")
+main_canvas.configure(yscrollcommand=main_scrollbar.set)
+
+main_canvas.pack(side="left", fill="both", expand=True)
+main_scrollbar.pack(side="right", fill="y")
+
+# mousewheel scroll 
+def _on_mousewheel(event):
+    main_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+    main_canvas.bind_all("<MouseWheel>", _on_mousewheel)  # Windows/Mac
+    main_canvas.bind_all("<Button-4>", lambda e: main_canvas.yview_scroll(-1, "units"))  # Linux scroll up
+    main_canvas.bind_all("<Button-5>", lambda e: main_canvas.yview_scroll(1, "units"))   # Linux scroll down
+
+# to scroll entire ui
+tk.Label(main_scrollable_frame, text="System Instruction for AI:").pack()
+system_input = tk.Entry(main_scrollable_frame, width=80)
 system_input.pack(pady=5)
 
-# Image selection
-tk.Button(app, text="Choose Image(s)", command=choose_images).pack(pady=5)
-listbox = tk.Listbox(app, width=60, height=5)
+tk.Button(main_scrollable_frame, text="Choose Image(s)", command=choose_images).pack(pady=5)
+listbox = tk.Listbox(main_scrollable_frame, width=60, height=5)
 listbox.pack()
 
-# Manipulation selection
-tk.Label(app, text="Manipulation:").pack()
+tk.Label(main_scrollable_frame, text="Manipulation:").pack()
 action_var = tk.StringVar()
-action_menu = ttk.Combobox(app, textvariable=action_var, state="readonly")
+action_menu = ttk.Combobox(main_scrollable_frame, textvariable=action_var, state="readonly")
 action_menu["values"] = ["Resize", "Rotate", "Crop", "Brightness", "Contrast", "Grayscale", "Sepia"]
 action_menu.current(0)
 action_menu.pack()
 action_menu.bind("<<ComboboxSelected>>", update_param_fields)
 
-params_frame = tk.Frame(app)
+params_frame = tk.Frame(main_scrollable_frame)
 params_frame.pack(pady=5)
 
 param1_var = tk.StringVar()
 param2_var = tk.StringVar()
 crop_vars = [tk.StringVar() for _ in range(4)]
 
-# Apply button
-tk.Button(app, text="Apply Manipulation Change", command=apply_manipulation).pack(pady=10)
+tk.Button(main_scrollable_frame, text="Choose & Manipulation Change", command=apply_manipulation).pack(pady=10)
 
-# Preview area
-image_frame = tk.Frame(app)
-image_frame.pack(pady=10)
+# Scrollable Image Preview Area
+preview_container = tk.Frame(main_scrollable_frame)
+preview_container.pack(fill="both", expand=True, pady=10)
 
-# Send to OpenAI
-tk.Button(app, text="Send to OpenAI AI", command=send_to_openai).pack(pady=5)
+canvas = tk.Canvas(preview_container, height=200)
+scrollbar = tk.Scrollbar(preview_container, orient="vertical", command=canvas.yview)
+scrollable_frame = tk.Frame(canvas)
 
-# Output from OpenAI
-tk.Label(app, text="Here is OpenAI's Response:").pack()
-output_box = tk.Text(app, height=8, width=90)
+scrollable_frame.bind(
+    "<Configure>",
+    lambda e: canvas.configure(
+        scrollregion=canvas.bbox("all")
+    )
+)
+
+canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+canvas.configure(yscrollcommand=scrollbar.set)
+
+canvas.pack(side="left", fill="both", expand=True)
+scrollbar.pack(side="right", fill="y")
+
+image_frame = scrollable_frame  # Use this for preview_image
+
+tk.Button(main_scrollable_frame, text="Send to OpenAI AI", command=send_to_openai).pack(pady=5)
+
+tk.Label(main_scrollable_frame, text="Here is OpenAI's Response:").pack()
+output_box = tk.Text(main_scrollable_frame, height=8, width=90)
 output_box.pack(pady=5)
 
 update_param_fields()
