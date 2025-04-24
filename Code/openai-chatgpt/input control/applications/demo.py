@@ -1,230 +1,255 @@
 # programmed by Edward Gonzalez (github: egonzalez99)
 #below are the python 
 import tkinter as tk
-from tkinter import filedialog, messagebox, ttk
-from PIL import Image as PILImage, ImageEnhance, ImageTk
-import base64
-import numpy as np
-from io import BytesIO
+from tkinter import ttk, filedialog, messagebox
 from openai import OpenAI
+import requests, base64
+from PIL import Image, ImageTk, ImageOps
+from io import BytesIO
+import os
 
-# OpenAI client setup
-client = OpenAI(api_key="api_key_here")  # Replace with your key
-# assistant's ID here
+# Initialize OpenAI client
+client = OpenAI(api_key="api_key_here")  # Replace with your actual API key
+
 assistant_id = "assistant_id_here"
+# hold multiple images
+edit_image_paths = []
 
-# Global variables
-selected_images = []
-manipulated_images = []
+# Display Image from bytes(easier to store and move image information as nums)
+def display_image(image_bytes, label):
+    img = Image.open(BytesIO(image_bytes)).resize((512, 512))
+    img_tk = ImageTk.PhotoImage(img)
+    label.config(image=img_tk)
+    label.image = img_tk
     
-# Function to manipulate image
-def manipulate_image(image_path, action, params=None):
-    image = PILImage.open(image_path)
+# Image Generation tab and functions here
+def generate_image():
+    global generated_image_bytes
+    prompt = gen_prompt_entry.get()
+    if not prompt:
+        messagebox.showerror("Error", "Please enter a prompt with what you want done with the image.")
+        return
+    try:
+        response = client.images.generate(
+            model="dall-e-2", # openai image model used, careful of api calls
+            prompt=prompt,
+            n=1,
+            size="512x512", 
+            response_format="url" 
+        )
+        image_url = response.data[0].url 
+        generated_image_bytes = requests.get(image_url).content  # storing/saving the image       
+        display_image(generated_image_bytes, gen_image_label)
+        generator_result.config(text="Generator was successful!")
+    except Exception as e:
+        messagebox.showerror("Error with the generator", str(e))
 
-    if action == "Resize":
-        width, height = params
-        image = image.resize((width, height))
-    elif action == "Rotate":
-        angle = params.get("angle", 90)
-        image = image.rotate(angle)
-    elif action == "Crop":
-        left, upper, right, lower = params
-        image = image.crop((left, upper, right, lower))
-    elif action == "Brightness":
-        enhancer = ImageEnhance.Brightness(image)
-        image = enhancer.enhance(params["factor"])
-    elif action == "Contrast":
-        enhancer = ImageEnhance.Contrast(image)
-        image = enhancer.enhance(params["factor"])
-    elif action == "Grayscale":
-        image = image.convert("L")
-    elif action == "color filter":
-        image = np.array(image)
-        tr = np.array([0.393, 0.769, 0.189])
-        tg = np.array([0.349, 0.686, 0.168])
-        tb = np.array([0.272, 0.534, 0.131])
-        image = np.dot(image[...,:3], [tr, tg, tb])
-        image = np.clip(image, 0, 255).astype(np.uint8)
-        image = PILImage.fromarray(image)
+# saving generated image
+def save_generated_image():
+    if generated_image_bytes:
+        img = Image.open(BytesIO(generated_image_bytes)) # saving image from the generator as this variable
+        img.save("image_saved.png") # image saved file, can be changed
+        messagebox.showinfo("Saved", "Image saved as 'image_saved.png'")
+    else:
+        messagebox.showerror("Error", "No image to save.")
+# ------------------------------------------------------------------------------------------------------------ 
 
-    buffered = BytesIO()
-    image.save(buffered, format="PNG")
-    encoded = base64.b64encode(buffered.getvalue()).decode("utf-8")
-    return encoded, image
+# Image Editing tab and functions here
+def image_selector():
+    files = filedialog.askopenfilenames(filetypes=[("PNG files", "*.png")])
+    # shows the image file path name from user's directory path
+    if files:
+        edit_image_paths.clear() 
+        edit_image_paths.extend(files)
+        names = [os.path.basename(path) for path in files]
+        edit_result_label.config(text=f"Selected: {', '.join(names)}")
 
-# UI logic
-def choose_images():
-    global selected_images
-    file_paths = filedialog.askopenfilenames(title="Select Images", filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.bmp;*.tiff")])
-    if file_paths:
-        selected_images = file_paths
-        listbox.delete(0, tk.END)
-        for path in selected_images:
-            listbox.insert(tk.END, path.split("/")[-1])
+def merge_image(image_paths, size=(256, 256), grid_size=(2, 2)):
+    imgs = [Image.open(path).resize(size) for path in image_paths]
+    cols, rows = grid_size
+    collage = Image.new("RGBA", (cols * size[0], rows * size[1]), (255, 255, 255, 0))
 
-def update_param_fields(event=None):
-    action = action_var.get()
-    for widget in params_frame.winfo_children():
-        widget.destroy()
+    for i, img in enumerate(imgs):
+        x = (i % cols) * size[0]
+        y = (i // cols) * size[1]
+        collage.paste(img, (x, y))
 
-    if action == "Resize":
-        tk.Label(params_frame, text="Width:").grid(row=0, column=0)
-        tk.Entry(params_frame, textvariable=param1_var).grid(row=0, column=1)
-        tk.Label(params_frame, text="Height:").grid(row=1, column=0)
-        tk.Entry(params_frame, textvariable=param2_var).grid(row=1, column=1)
-    elif action == "Rotate":
-        tk.Label(params_frame, text="Angle:").grid(row=0, column=0)
-        tk.Entry(params_frame, textvariable=param1_var).grid(row=0, column=1)
-    elif action == "Crop":
-        for i, label in enumerate(["Left", "Top", "Right", "Bottom"]):
-            tk.Label(params_frame, text=label + ":").grid(row=i, column=0)
-            tk.Entry(params_frame, textvariable=crop_vars[i]).grid(row=i, column=1)
-    elif action in ["Brightness", "Contrast"]:
-        tk.Label(params_frame, text="Factor (e.g., 1.0):").grid(row=0, column=0)
-        tk.Entry(params_frame, textvariable=param1_var).grid(row=0, column=1)
+    output_path = "combined_image.png"
+    collage.save(output_path)
+    return output_path
 
-def apply_manipulation():
-    global manipulated_images
-    manipulated_images = []
-    action = action_var.get()
-
-    for path in selected_images:
-        if action == "Resize":
-            params = (int(param1_var.get()), int(param2_var.get()))
-        elif action == "Rotate":
-            params = {"angle": int(param1_var.get())}
-        elif action == "Crop":
-            params = tuple(int(var.get()) for var in crop_vars)
-        elif action in ["Brightness", "Contrast"]:
-            params = {"factor": float(param1_var.get())}
-        else:
-            params = None
-        encoded, img = manipulate_image(path, action, params)
-        manipulated_images.append((encoded, img))
-        preview_image(img)
-
-def preview_image(pil_img):
-    preview = PILImage.new("RGB", pil_img.size)
-    preview.paste(pil_img)
-    preview.thumbnail((200, 200))
-    img_tk = ImageTk.PhotoImage(preview)
-    img_label = tk.Label(image_frame, image=img_tk)
-    img_label.image = img_tk
-    img_label.pack(padx=5, pady=5)
-
-# system instructions for errors
-def send_to_openai():
-    if not manipulated_images:
-        messagebox.showwarning("Warning", "No images to send.")
+def image_editor():
+    global image_bytes
+    if not edit_image_paths:
+        messagebox.showerror("Error", "Please select one or more images to manipulate with.")
         return
 
-    system_instruction = system_input.get()
-    if not system_instruction:
-        messagebox.showwarning("Warning", "System instruction is required.")
+    prompt = edit_prompt_entry.get()
+    if not prompt:
+        messagebox.showerror("Error", "Enter your prompt here.")
         return
-
-    image_messages = [
-        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded}"}}
-        for encoded, _ in manipulated_images
-    ]
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": system_instruction},
-                {"role": "user", "content": image_messages}
-            ],
-        )
-        output_box.delete(1.0, tk.END)
-        output_box.insert(tk.END, response.choices[0].message.content)
+        grid_size = (2, 2) if len(edit_image_paths) > 1 else (1, 1) 
+        combined_path = merge_image(edit_image_paths[:4], grid_size=grid_size)
+
+        with open(combined_path, "rb") as image_file:
+            result = client.images.edit(
+                model="dall-e-2",  # openai image model used
+                image=image_file,
+                prompt=prompt,
+                response_format="b64_json"
+            )
+
+        image_base64 = result.data[0].b64_json
+        image_bytes = base64.b64decode(image_base64)
+
+        with open("image-edited.png", "wb") as f:
+            f.write(image_bytes)
+
+        display_image(image_bytes, edit_image_label)
+        edit_result_label.config(text="Edited image saved as 'image-edited.png'")
     except Exception as e:
-        messagebox.showerror("API Error", str(e))
+        messagebox.showerror("Error with image selected", str(e))
 
-# UI
-app = tk.Tk()
-app.title("Image Manipulation + AI")
-app.geometry("850x850")
+# saving edited image
+def save_edited_image():
+    if image_bytes:
+        img = Image.open(BytesIO(image_bytes)) # saving image from the edited image as this variable
+        img.save("image_saved.png") # image saved file, can be changed
+        messagebox.showinfo("Saved", "Image saved as 'image_saved.png'")
+    else:
+        messagebox.showerror("Error", "No image to save.")
+# ------------------------------------------------------------------------------------------------------------   
+# Image Mask tab and functions here
+def first_image():
+    global base_image_path
+    path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png")])
+    if path:
+        base_image_path = path
+        mask_base_label.config(text=f"Base: {os.path.basename(path)}")
 
-# scroll setup
-main_canvas = tk.Canvas(app)
-main_scrollbar = tk.Scrollbar(app, orient="vertical", command=main_canvas.yview)
-main_scrollable_frame = tk.Frame(main_canvas)
+def second_image():
+    global mask_image_path
+    path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png")])
+    if path:
+        mask_image_path = path
+        mask_mask_label.config(text=f"Mask: {os.path.basename(path)}")
 
-main_scrollable_frame.bind(
-    "<Configure>",
-    lambda e: main_canvas.configure(
-        scrollregion=main_canvas.bbox("all")
-    )
-)
+def apply_mask_edit():
+    
+    try:
+        # Open base and mask images
+        base_img = Image.open(base_image_path).convert("RGBA")
+        mask_img = Image.open(mask_image_path).convert("L")  # Convert mask to grayscale
 
-main_canvas.create_window((0, 0), window=main_scrollable_frame, anchor="nw")
-main_canvas.configure(yscrollcommand=main_scrollbar.set)
+        # Resize mask to match base image
+        mask_img = mask_img.resize(base_img.size)
 
-main_canvas.pack(side="left", fill="both", expand=True)
-main_scrollbar.pack(side="right", fill="y")
+        # image 
+        overlay_image = Image.new("RGBA", base_img.size, (0, 0, 0, 0))
+        binary_mask = mask_img.point(lambda p: 255 if p > 128 else 0)
+        overlay_image.putalpha(binary_mask)
+        preview_img = Image.alpha_composite(base_img, overlay_image)
+        preview_img.save("mask_overlay.png")
+        preview_img.show()
 
-# mousewheel scroll 
-def _on_mousewheel(event):
-    main_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
-    main_canvas.bind_all("<MouseWheel>", _on_mousewheel)  # Windows/Mac
-    main_canvas.bind_all("<Button-4>", lambda e: main_canvas.yview_scroll(-1, "units"))  # Linux scroll up
-    main_canvas.bind_all("<Button-5>", lambda e: main_canvas.yview_scroll(1, "units"))   # Linux scroll down
+        # store images for API call
+        base_path = "temp_base.png"
+        mask_path = "temp_mask.png"
+        base_img.save(base_path)
+        mask_img.save(mask_path)
 
-# to scroll entire ui
-tk.Label(main_scrollable_frame, text="System Instruction for AI:").pack()
-system_input = tk.Entry(main_scrollable_frame, width=80)
-system_input.pack(pady=5)
+        # Call OpenAI image edit API
+        with open(base_path, "rb") as image_file, open(mask_path, "rb") as mask_file:
+            result = client.images.edit(
+                model="dall-e-2",
+                image=image_file,
+                mask=mask_file,
+                response_format="b64_json"
+            )
 
-tk.Button(main_scrollable_frame, text="Choose Image(s)", command=choose_images).pack(pady=5)
-listbox = tk.Listbox(main_scrollable_frame, width=60, height=5)
-listbox.pack()
+        image_base64_ = result.data[0].b64_json
+        image_bytes_ = base64.b64decode(image_base64_)
 
-tk.Label(main_scrollable_frame, text="Manipulation:").pack()
-action_var = tk.StringVar()
-action_menu = ttk.Combobox(main_scrollable_frame, textvariable=action_var, state="readonly")
-action_menu["values"] = ["Resize", "Rotate", "Crop", "Brightness", "Contrast", "Grayscale", "Sepia"]
-action_menu.current(0)
-action_menu.pack()
-action_menu.bind("<<ComboboxSelected>>", update_param_fields)
+        with open("masked_image.png", "wb") as f:
+            f.write(image_bytes_)
 
-params_frame = tk.Frame(main_scrollable_frame)
-params_frame.pack(pady=5)
+        display_image(image_bytes_, mask_result_image)
+        mask_result_label.config(text="Saved as 'masked_image.png'")
 
-param1_var = tk.StringVar()
-param2_var = tk.StringVar()
-crop_vars = [tk.StringVar() for _ in range(4)]
+    except Exception as e:
+        messagebox.showerror("Error", str(e))
 
-tk.Button(main_scrollable_frame, text="Choose & Manipulation Change", command=apply_manipulation).pack(pady=10)
+        
+# GUI Setup Below
+root = tk.Tk()
+root.title("AI Image Generator & Editor")
+root.geometry("640x800")
 
-# Scrollable Image Preview Area
-preview_container = tk.Frame(main_scrollable_frame)
-preview_container.pack(fill="both", expand=True, pady=10)
+tab_control = ttk.Notebook(root)
 
-canvas = tk.Canvas(preview_container, height=200)
-scrollbar = tk.Scrollbar(preview_container, orient="vertical", command=canvas.yview)
-scrollable_frame = tk.Frame(canvas)
+#Generator Tab
+generate_tab = ttk.Frame(tab_control)
+tab_control.add(generate_tab, text='⚙️ 🛠️ Image Generator')
 
-scrollable_frame.bind(
-    "<Configure>",
-    lambda e: canvas.configure(
-        scrollregion=canvas.bbox("all")
-    )
-)
+tk.Label(generate_tab, text="Prompt for Generation:").pack(pady=15)
+gen_prompt_entry = tk.Entry(generate_tab, width=75)
+gen_prompt_entry.pack(pady=15)
 
-canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-canvas.configure(yscrollcommand=scrollbar.set)
+tk.Button(generate_tab, text="Generate Image", command=generate_image).pack(pady=15)
 
-canvas.pack(side="left", fill="both", expand=True)
-scrollbar.pack(side="right", fill="y")
+gen_image_label = tk.Label(generate_tab)
+gen_image_label.pack(pady=10)
 
-image_frame = scrollable_frame  # Use this for preview_image
+generator_result = tk.Label(generate_tab, text="")
+generator_result.pack()
 
-tk.Button(main_scrollable_frame, text="Send to OpenAI AI", command=send_to_openai).pack(pady=5)
+tk.Button(generate_tab, text="Save Image", command=save_generated_image).pack(pady=15)
 
-tk.Label(main_scrollable_frame, text="Here is OpenAI's Response:").pack()
-output_box = tk.Text(main_scrollable_frame, height=8, width=90)
-output_box.pack(pady=5)
+# Edit Tab
+edit_tab = ttk.Frame(tab_control)
+tab_control.add(edit_tab, text='-ˋˏ✄┈┈┈┈ 🎨 Image Editor')
 
-update_param_fields()
-app.mainloop()
+edit_image_path = tk.StringVar()
+
+tk.Label(edit_tab, text="Enter prompt here to Edit the image(s):").pack(pady=15)
+edit_prompt_entry = tk.Entry(edit_tab, width=60)
+edit_prompt_entry.pack(pady=5)
+
+tk.Button(edit_tab, text="Select Image(s) from your device or file path", command=image_selector).pack(pady=15)
+tk.Button(edit_tab, text="Your edited image(s) are below [original above and edited below]", command=image_editor).pack(pady=15)
+
+edit_image_label = tk.Label(edit_tab)
+edit_image_label.pack(pady=15)
+
+edit_result_label = tk.Label(edit_tab, text="")
+edit_result_label.pack()
+
+tk.Button(edit_tab, text="Save Edited Image", command=save_edited_image).pack(pady=15)
+
+# Mask Tab
+mask_tab = ttk.Frame(tab_control)
+tab_control.add(mask_tab, text='🖌️ 🎭 Image Mask/Layer Editor')
+
+tk.Button(mask_tab, text="Select Your Base/First Image", command=first_image).pack(pady=15)
+mask_base_label = tk.Label(mask_tab, text="No base image selected")
+mask_base_label.pack(pady=15)
+
+tk.Button(mask_tab, text="Select Your Mask/Second Image", command=second_image).pack(pady=15)
+mask_mask_label = tk.Label(mask_tab, text="No mask image selected")
+mask_mask_label.pack(pady=15)
+
+tk.Button(mask_tab, text="Apply Your Base and Mask Together", command=apply_mask_edit).pack(pady=15)
+
+mask_result_image = tk.Label(mask_tab)
+mask_result_image.pack(pady=10)
+
+mask_result_label = tk.Label(mask_tab, text="")
+mask_result_label.pack()
+
+
+# gui main window
+tab_control.pack(expand=1, fill='both')
+
+root.mainloop()
