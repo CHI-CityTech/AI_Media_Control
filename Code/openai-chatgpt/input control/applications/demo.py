@@ -60,14 +60,14 @@ def save_generated_image():
 # Image Editing tab and functions here
 def edit_first_image():
     global edit_base_image_path
-    path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png")])
+    path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.tiff;*")])
     if path:
         edit_base_image_path = path
         edit_base_label.config(text=f"Base Selected: {os.path.basename(path)}")
 
 def edit_second_image():
     global edit_second_image_path
-    path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png")])
+    path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.tiff;*")])
     if path:
         edit_second_image_path = path
         edit_second_label.config(text=f"Second Selected: {os.path.basename(path)}")
@@ -157,14 +157,14 @@ def save_edited_image():
 # Image Mask tab and functions here
 def first_image():
     global base_image_path
-    path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png")])
+    path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.tiff;*")])
     if path:
         base_image_path = path
         mask_base_label.config(text=f"Base: {os.path.basename(path)}")
 
 def second_image():
     global mask_image_path
-    path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png")])
+    path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.tiff;*")])
     if path:
         mask_image_path = path
         mask_mask_label.config(text=f"Mask: {os.path.basename(path)}")
