@@ -6,6 +6,7 @@ from openai import OpenAI
 import requests, base64
 from PIL import Image, ImageTk, ImageOps
 from io import BytesIO
+from math import ceil, sqrt
 import os
 
 # Initialize OpenAI client
@@ -13,6 +14,8 @@ client = OpenAI(api_key="api_key_here")  # Replace with your actual API key
 
 assistant_id = "assistant_id_here"
 # hold multiple images
+edit_base_image_path = ""
+edit_second_image_path = ""
 edit_image_paths = []
 
 # Display Image from bytes(easier to store and move image information as nums)
@@ -55,33 +58,54 @@ def save_generated_image():
 # ------------------------------------------------------------------------------------------------------------ 
 
 # Image Editing tab and functions here
-def image_selector():
-    files = filedialog.askopenfilenames(filetypes=[("PNG files", "*.png")])
-    # shows the image file path name from user's directory path
-    if files:
-        edit_image_paths.clear() 
-        edit_image_paths.extend(files)
-        names = [os.path.basename(path) for path in files]
-        edit_result_label.config(text=f"Selected: {', '.join(names)}")
+def edit_first_image():
+    global edit_base_image_path
+    path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png")])
+    if path:
+        edit_base_image_path = path
+        edit_base_label.config(text=f"Base Selected: {os.path.basename(path)}")
 
-def merge_image(image_paths, size=(256, 256), grid_size=(2, 2)):
-    imgs = [Image.open(path).resize(size) for path in image_paths]
-    cols, rows = grid_size
-    collage = Image.new("RGBA", (cols * size[0], rows * size[1]), (255, 255, 255, 0))
+def edit_second_image():
+    global edit_second_image_path
+    path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png")])
+    if path:
+        edit_second_image_path = path
+        edit_second_label.config(text=f"Second Selected: {os.path.basename(path)}")
 
-    for i, img in enumerate(imgs):
+from math import ceil, sqrt
+
+def merge_image(image_paths, size=(256, 256), background_color=(255, 255, 255, 0)):
+    num_images = len(image_paths)
+    if num_images == 0:
+        raise ValueError("No images provided to merge.")
+    
+    # Smart grid size
+    if num_images == 1:
+        cols, rows = 1, 1
+    elif num_images == 2:
+        cols, rows = 2, 1
+    else:
+        cols = 2
+        rows = ceil(num_images / 2)  # 2 images per row
+    
+    # Create a blank canvas
+    collage = Image.new("RGBA", (cols * size[0], rows * size[1]), background_color)
+    
+    # Open and paste each image
+    for i, path in enumerate(image_paths):
+        img = Image.open(path).resize(size)
         x = (i % cols) * size[0]
         y = (i // cols) * size[1]
         collage.paste(img, (x, y))
-
+    
     output_path = "combined_image.png"
     collage.save(output_path)
     return output_path
 
 def image_editor():
     global image_bytes
-    if not edit_image_paths:
-        messagebox.showerror("Error", "Please select one or more images to manipulate with.")
+    if not edit_base_image_path or not edit_second_image_path:
+        messagebox.showerror("Error", "Please select both base and second images to manipulate.")
         return
 
     prompt = edit_prompt_entry.get()
@@ -90,28 +114,37 @@ def image_editor():
         return
 
     try:
-        grid_size = (2, 2) if len(edit_image_paths) > 1 else (1, 1) 
-        combined_path = merge_image(edit_image_paths[:4], grid_size=grid_size)
+        # Merge the selected images (this will auto handle grid size and number of images)
+        combined_path = merge_image([edit_base_image_path, edit_second_image_path])
 
+        # Open the combined image
         with open(combined_path, "rb") as image_file:
             result = client.images.edit(
-                model="dall-e-2",  # openai image model used
+                model="dall-e-2",  # OpenAI image model used
                 image=image_file,
-                prompt=prompt,
+                prompt=prompt,  # User input prompt
                 response_format="b64_json"
             )
 
         image_base64 = result.data[0].b64_json
         image_bytes = base64.b64decode(image_base64)
 
+        # Save the edited image locally
         with open("image-edited.png", "wb") as f:
             f.write(image_bytes)
 
+        # Open and show the image using the show() method
+        edited_image = Image.open("image-edited.png")
+        edited_image.show()  # This will open the image in the default image viewer
+
+        # Display the image in your Tkinter GUI
         display_image(image_bytes, edit_image_label)
         edit_result_label.config(text="Edited image saved as 'image-edited.png'")
+
     except Exception as e:
         messagebox.showerror("Error with image selected", str(e))
-
+        
+        
 # saving edited image
 def save_edited_image():
     if image_bytes:
@@ -217,9 +250,17 @@ tk.Label(edit_tab, text="Enter prompt here to Edit the image(s):").pack(pady=15)
 edit_prompt_entry = tk.Entry(edit_tab, width=60)
 edit_prompt_entry.pack(pady=5)
 
-tk.Button(edit_tab, text="Select Image(s) from your device or file path", command=image_selector).pack(pady=15)
-tk.Button(edit_tab, text="Your edited image(s) are below [original above and edited below]", command=image_editor).pack(pady=15)
+tk.Button(edit_tab, text="Select Base Image", command=edit_first_image).pack(pady=10)
+edit_base_label = tk.Label(edit_tab, text="No base image selected yet")
+edit_base_label.pack(pady=5)
 
+tk.Button(edit_tab, text="Select Second Image", command=edit_second_image).pack(pady=10)
+edit_second_label = tk.Label(edit_tab, text="No second image selected yet")
+edit_second_label.pack(pady=5)
+
+tk.Button(edit_tab, text="Edit Image(s)", command=image_editor).pack(pady=15)
+
+# Show result
 edit_image_label = tk.Label(edit_tab)
 edit_image_label.pack(pady=15)
 
@@ -227,6 +268,7 @@ edit_result_label = tk.Label(edit_tab, text="")
 edit_result_label.pack()
 
 tk.Button(edit_tab, text="Save Edited Image", command=save_edited_image).pack(pady=15)
+
 
 # Mask Tab
 mask_tab = ttk.Frame(tab_control)
