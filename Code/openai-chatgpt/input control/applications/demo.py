@@ -63,14 +63,20 @@ def edit_first_image():
     path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.tiff;*")])
     if path:
         edit_base_image_path = path
-        edit_base_label.config(text=f"Base Selected: {os.path.basename(path)}")
+        img = Image.open(path).resize((256, 256))  
+        img_tk = ImageTk.PhotoImage(img)
+        edit_base_label.config(image=img_tk, text="")
+        edit_base_label.image = img_tk
 
 def edit_second_image():
     global edit_second_image_path
     path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.tiff;*")])
     if path:
         edit_second_image_path = path
-        edit_second_label.config(text=f"Second Selected: {os.path.basename(path)}")
+        img = Image.open(path).resize((256, 256))  
+        img_tk = ImageTk.PhotoImage(img)
+        edit_second_label.config(image=img_tk, text="")
+        edit_second_label.image = img_tk
 
 from math import ceil, sqrt
 
@@ -160,14 +166,20 @@ def first_image():
     path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.tiff;*")])
     if path:
         base_image_path = path
-        mask_base_label.config(text=f"Base: {os.path.basename(path)}")
+        img = Image.open(path).resize((256, 256))  
+        img_tk = ImageTk.PhotoImage(img)
+        mask_base_label.config(image=img_tk, text="")
+        mask_base_label.image = img_tk
 
 def second_image():
     global mask_image_path
     path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.tiff;*")])
     if path:
         mask_image_path = path
-        mask_mask_label.config(text=f"Mask: {os.path.basename(path)}")
+        img = Image.open(path).resize((256, 256))  
+        img_tk = ImageTk.PhotoImage(img)
+        mask_second_label.config(image=img_tk, text="")
+        mask_second_label.image = img_tk
 
 def apply_mask_edit():
     
@@ -226,11 +238,13 @@ tab_control = ttk.Notebook(root)
 generate_tab = ttk.Frame(tab_control)
 tab_control.add(generate_tab, text='⚙️ 🛠️ Image Generator')
 
-tk.Label(generate_tab, text="Prompt for Generation:").pack(pady=15)
+tk.Label(generate_tab, text="This uses two images to generate a new Image with something you want in a background or other instruction").pack(pady=10)
+
+tk.Label(generate_tab, text="Write in the prompt below an image you want generated:").pack(pady=15)
 gen_prompt_entry = tk.Entry(generate_tab, width=75)
 gen_prompt_entry.pack(pady=15)
 
-tk.Button(generate_tab, text="Generate Image", command=generate_image).pack(pady=15)
+tk.Button(generate_tab, text="Generate The Image", command=generate_image).pack(pady=10)
 
 gen_image_label = tk.Label(generate_tab)
 gen_image_label.pack(pady=10)
@@ -238,27 +252,28 @@ gen_image_label.pack(pady=10)
 generator_result = tk.Label(generate_tab, text="")
 generator_result.pack()
 
-tk.Button(generate_tab, text="Save Image", command=save_generated_image).pack(pady=15)
+tk.Button(generate_tab, text="Save Your Image", command=save_generated_image).pack(pady=10)
 
 # Edit Tab
 edit_tab = ttk.Frame(tab_control)
 tab_control.add(edit_tab, text='-ˋˏ✄┈┈┈┈ 🎨 Image Editor')
 
+tk.Label(edit_tab, text="This uses two images to be edited with a prompt. For example: combine the two images with a sunset background").pack(pady=10)
+
 edit_image_path = tk.StringVar()
 
-tk.Label(edit_tab, text="Enter prompt here to Edit the image(s):").pack(pady=15)
-edit_prompt_entry = tk.Entry(edit_tab, width=60)
-edit_prompt_entry.pack(pady=5)
-
-tk.Button(edit_tab, text="Select Base Image", command=edit_first_image).pack(pady=10)
+tk.Button(edit_tab, text="Select First Image", command=edit_first_image).pack(pady=10)
 edit_base_label = tk.Label(edit_tab, text="No base image selected yet")
 edit_base_label.pack(pady=5)
 
 tk.Button(edit_tab, text="Select Second Image", command=edit_second_image).pack(pady=10)
 edit_second_label = tk.Label(edit_tab, text="No second image selected yet")
-edit_second_label.pack(pady=5)
+edit_second_label.pack(pady=10)
 
-tk.Button(edit_tab, text="Edit Image(s)", command=image_editor).pack(pady=15)
+tk.Label(edit_tab, text="Write in the prompt an instruction for the images to be edited:").pack(pady=10)
+edit_prompt_entry = tk.Entry(edit_tab, width=60)
+edit_prompt_entry.pack(pady=10)
+tk.Button(edit_tab, text="Edit Both Images", command=image_editor).pack(pady=15)
 
 # Show result
 edit_image_label = tk.Label(edit_tab)
@@ -269,20 +284,21 @@ edit_result_label.pack()
 
 tk.Button(edit_tab, text="Save Edited Image", command=save_edited_image).pack(pady=15)
 
-
 # Mask Tab
 mask_tab = ttk.Frame(tab_control)
-tab_control.add(mask_tab, text='🖌️ 🎭 Image Mask/Layer Editor')
+tab_control.add(mask_tab, text='🖌️ 🎭 Image Layering')
 
-tk.Button(mask_tab, text="Select Your Base/First Image", command=first_image).pack(pady=15)
+tk.Label(mask_tab, text="This uses two images to layer one image on top of another to generate a new image.").pack(pady=10)
+
+tk.Button(mask_tab, text="Select Your First Image", command=first_image).pack(pady=20)
 mask_base_label = tk.Label(mask_tab, text="No base image selected")
 mask_base_label.pack(pady=15)
 
-tk.Button(mask_tab, text="Select Your Mask/Second Image", command=second_image).pack(pady=15)
-mask_mask_label = tk.Label(mask_tab, text="No mask image selected")
-mask_mask_label.pack(pady=15)
+tk.Button(mask_tab, text="Select Your Second Image", command=second_image).pack(pady=20)
+mask_second_label = tk.Label(mask_tab, text="No mask image selected")
+mask_second_label.pack(pady=20)
 
-tk.Button(mask_tab, text="Apply Your Base and Mask Together", command=apply_mask_edit).pack(pady=15)
+tk.Button(mask_tab, text="Apply Your Layering for Both IMages", command=apply_mask_edit).pack(pady=20)
 
 mask_result_image = tk.Label(mask_tab)
 mask_result_image.pack(pady=10)
