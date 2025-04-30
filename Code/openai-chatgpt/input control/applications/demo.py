@@ -63,7 +63,7 @@ def edit_first_image():
     path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.tiff;*")])
     if path:
         edit_base_image_path = path
-        img = Image.open(path).resize((256, 256))  
+        img = Image.open(path).resize((150, 150))  
         img_tk = ImageTk.PhotoImage(img)
         edit_base_label.config(image=img_tk, text="")
         edit_base_label.image = img_tk
@@ -73,14 +73,14 @@ def edit_second_image():
     path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.tiff;*")])
     if path:
         edit_second_image_path = path
-        img = Image.open(path).resize((256, 256))  
+        img = Image.open(path).resize((150, 150))  
         img_tk = ImageTk.PhotoImage(img)
         edit_second_label.config(image=img_tk, text="")
         edit_second_label.image = img_tk
 
 from math import ceil, sqrt
 
-def merge_image(image_paths, size=(256, 256), background_color=(255, 255, 255, 0)):
+def merge_image(image_paths, size=(150, 150), background_color=(255, 255, 255, 0)):
     num_images = len(image_paths)
     if num_images == 0:
         raise ValueError("No images provided to merge.")
@@ -150,6 +150,89 @@ def image_editor():
     except Exception as e:
         messagebox.showerror("Error with image selected", str(e))
         
+def resize_image():
+    global edit_base_image_path
+    if not edit_base_image_path:
+        messagebox.showerror("Error", "Please select an image to resize.")
+        return
+    
+    try:
+        width = int(resize_width_entry.get())
+        height = int(resize_height_entry.get())
+        
+        img = Image.open(edit_base_image_path)
+        resized_img = img.resize((width, height))
+        
+        img_tk = ImageTk.PhotoImage(resized_img)
+        edit_base_label.config(image=img_tk, text="")
+        edit_base_label.image = img_tk
+        
+        messagebox.showinfo("Success", f"Image resized to {width}x{height}")
+    except ValueError:
+        messagebox.showerror("Error", "Please enter valid width and height.")
+
+def rotate_image():
+    global edit_base_image_path
+    if not edit_base_image_path:
+        messagebox.showerror("Error", "Please select an image to rotate.")
+        return
+
+    try:
+        angle = int(rotate_angle_entry.get())
+        
+        img = Image.open(edit_base_image_path)
+        rotated_img = img.rotate(angle)
+        
+        img_tk = ImageTk.PhotoImage(rotated_img)
+        edit_base_label.config(image=img_tk, text="")
+        edit_base_label.image = img_tk
+        
+        messagebox.showinfo("Success", f"Image rotated by {angle} degrees")
+    except ValueError:
+        messagebox.showerror("Error", "Please enter a valid rotation angle.")
+
+def apply_grayscale():
+    global edit_base_image_path
+    if not edit_base_image_path:
+        messagebox.showerror("Error", "Please select an image for grayscale.")
+        return
+    
+    img = Image.open(edit_base_image_path)
+    grayscale_img = img.convert("L")  # Convert image to grayscale
+    
+    img_tk = ImageTk.PhotoImage(grayscale_img)
+    edit_base_label.config(image=img_tk, text="")
+    edit_base_label.image = img_tk
+
+    messagebox.showinfo("Success", "Image converted to grayscale.")
+
+def apply_sepia():
+    global edit_base_image_path
+    if not edit_base_image_path:
+        messagebox.showerror("Error", "Please select an image for sepia filter.")
+        return
+    
+    img = Image.open(edit_base_image_path)
+    sepia_img = img.convert("RGB")
+    pixels = sepia_img.load()
+
+    for i in range(sepia_img.width):
+        for j in range(sepia_img.height):
+            r, g, b = sepia_img.getpixel((i, j))
+            
+            tr = int(0.393 * r + 0.769 * g + 0.189 * b)
+            tg = int(0.349 * r + 0.686 * g + 0.168 * b)
+            tb = int(0.272 * r + 0.534 * g + 0.131 * b)
+            
+            # Apply the sepia filter
+            sepia_img.putpixel((i, j), (min(tr, 255), min(tg, 255), min(tb, 255)))
+
+    img_tk = ImageTk.PhotoImage(sepia_img)
+    edit_base_label.config(image=img_tk, text="")
+    edit_base_label.image = img_tk
+    
+    messagebox.showinfo("Success", "Sepia filter applied.")
+        
         
 # saving edited image
 def save_edited_image():
@@ -166,7 +249,7 @@ def first_image():
     path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.tiff;*")])
     if path:
         base_image_path = path
-        img = Image.open(path).resize((256, 256))  
+        img = Image.open(path).resize((150, 150))  
         img_tk = ImageTk.PhotoImage(img)
         mask_base_label.config(image=img_tk, text="")
         mask_base_label.image = img_tk
@@ -176,7 +259,7 @@ def second_image():
     path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.tiff;*")])
     if path:
         mask_image_path = path
-        img = Image.open(path).resize((256, 256))  
+        img = Image.open(path).resize((150, 150))  
         img_tk = ImageTk.PhotoImage(img)
         mask_second_label.config(image=img_tk, text="")
         mask_second_label.image = img_tk
@@ -227,14 +310,33 @@ def apply_mask_edit():
         messagebox.showerror("Error", str(e))
 
         
-# GUI Setup Below
+# Create the main application window
 root = tk.Tk()
 root.title("AI Image Generator & Editor")
 root.geometry("640x800")
 
-tab_control = ttk.Notebook(root)
+# Create a frame to hold the tab content
+tab_frame = tk.Frame(root)
+tab_frame.pack(fill="both", expand=True)
 
-#Generator Tab
+# Create a canvas inside the tab frame
+canvas = tk.Canvas(tab_frame)
+canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+# Add a vertical scrollbar linked to the canvas
+scrollbar = tk.Scrollbar(tab_frame, orient="vertical", command=canvas.yview)
+scrollbar.pack(side=tk.RIGHT, fill="y")
+canvas.configure(yscrollcommand=scrollbar.set)
+
+# Create a frame inside the canvas
+content_frame = tk.Frame(canvas)
+canvas.create_window((0, 0), window=content_frame, anchor="nw")
+
+# Create the notebook (tab container)
+tab_control = ttk.Notebook(content_frame)
+tab_control.pack(expand=1, fill="both")
+
+# Generator Tab
 generate_tab = ttk.Frame(tab_control)
 tab_control.add(generate_tab, text='⚙️ 🛠️ Image Generator')
 
@@ -275,7 +377,21 @@ edit_prompt_entry = tk.Entry(edit_tab, width=60)
 edit_prompt_entry.pack(pady=10)
 tk.Button(edit_tab, text="Edit Both Images", command=image_editor).pack(pady=15)
 
-# Show result
+tk.Label(edit_tab, text="Resize the image:").pack(pady=10)
+resize_width_entry = tk.Entry(edit_tab, width=20)
+resize_width_entry.pack(pady=5)
+resize_height_entry = tk.Entry(edit_tab, width=20)
+resize_height_entry.pack(pady=5)
+tk.Button(edit_tab, text="Resize Image", command=resize_image).pack(pady=10)
+
+tk.Label(edit_tab, text="Rotate the image (in degrees):").pack(pady=10)
+rotate_angle_entry = tk.Entry(edit_tab, width=20)
+rotate_angle_entry.pack(pady=5)
+tk.Button(edit_tab, text="Rotate Image", command=rotate_image).pack(pady=10)
+
+tk.Button(edit_tab, text="Apply Grayscale Filter", command=apply_grayscale).pack(pady=10)
+tk.Button(edit_tab, text="Apply Sepia Filter", command=apply_sepia).pack(pady=10)
+
 edit_image_label = tk.Label(edit_tab)
 edit_image_label.pack(pady=15)
 
@@ -306,8 +422,18 @@ mask_result_image.pack(pady=10)
 mask_result_label = tk.Label(mask_tab, text="")
 mask_result_label.pack()
 
+# Function to update the scrollregion whenever necessary
+def on_frame_configure(event):
+    canvas.configure(scrollregion=canvas.bbox("all"))
 
-# gui main window
-tab_control.pack(expand=1, fill='both')
+content_frame.bind("<Configure>", on_frame_configure)
 
+# Function for mouse wheel scrolling
+def _on_mousewheel(event):
+    canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+# Bind mouse wheel to canvas
+canvas.bind_all("<MouseWheel>", _on_mousewheel)
+
+# Start the Tkinter event loop
 root.mainloop()
