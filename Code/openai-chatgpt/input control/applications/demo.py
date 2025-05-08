@@ -60,7 +60,7 @@ def save_generated_image():
 # Image Editing tab and functions here
 def edit_first_image():
     global edit_base_image_path
-    path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.tiff;*")])
+    path = filedialog.askopenfilename(filetypes=[("Image files", "*.png *.jpg *.jpeg *.gif *.bmp *.tiff")])
     if path:
         edit_base_image_path = path
         img = Image.open(path).resize((150, 150))  
@@ -70,7 +70,7 @@ def edit_first_image():
 
 def edit_second_image():
     global edit_second_image_path
-    path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.tiff;*")])
+    path = filedialog.askopenfilename(filetypes=[("Image files", "*.png *.jpg *.jpeg *.gif *.bmp *.tiff")])
     if path:
         edit_second_image_path = path
         img = Image.open(path).resize((150, 150))  
@@ -246,7 +246,7 @@ def save_edited_image():
 # Image Mask tab and functions here
 def first_image():
     global base_image_path
-    path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.tiff;*")])
+    path = filedialog.askopenfilename(filetypes=[("Image files", "*.png *.jpg *.jpeg *.gif *.bmp *.tiff")])
     if path:
         base_image_path = path
         img = Image.open(path).resize((150, 150))  
@@ -256,7 +256,7 @@ def first_image():
 
 def second_image():
     global mask_image_path
-    path = filedialog.askopenfilename(filetypes=[("PNG files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.tiff;*")])
+    path = filedialog.askopenfilename(filetypes=[("Image files", "*.png *.jpg *.jpeg *.gif *.bmp *.tiff")])
     if path:
         mask_image_path = path
         img = Image.open(path).resize((150, 150))  
@@ -285,8 +285,8 @@ def apply_mask_edit():
         # store images for API call
         base_path = "temp_base.png"
         mask_path = "temp_mask.png"
-        base_img.save(base_path)
-        mask_img.save(mask_path)
+        base_img.save(base_path, format="PNG")
+        mask_img.save(mask_path, format="PNG")
 
         # Call OpenAI image edit API
         with open(base_path, "rb") as image_file, open(mask_path, "rb") as mask_file:
@@ -437,3 +437,4 @@ canvas.bind_all("<MouseWheel>", _on_mousewheel)
 
 # Start the Tkinter event loop
 root.mainloop()
+
