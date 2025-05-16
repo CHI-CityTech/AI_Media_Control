@@ -1,15 +1,169 @@
-# AI-with-QLab-using-an-OSC
+# 🖼️📦 AI-with-QLab-using-an-OSC Template
 Combining Generative AI with QLab Using Open Sound Control 
 
 #Application UI Concept
-------------------------------------------------
-| [ Select Images Button ]                     |
-------------------------------------------------
-|   [Thumbnail 1]  [Thumbnail 2]  [Thumbnail 3]|
-|   (Click to select)                          |
-------------------------------------------------
+
+---
 | Instruction: [ "Make it sepia and brighter" ]|
 |                 [Apply]                      |
-------------------------------------------------
-|       [Modified Image Preview Here]          |
-------------------------------------------------
+
+---
+|   [Image Selected 1]    [Image Selected 2]   |
+|               (Click to select)              |
+|             [ Select Images Button ]         |
+
+---
+|       [Modified Image Previews Here]         |
+
+---
+
+Here is a complete **installation and setup guide** for the Python script you provided, titled:
+
+# 🖼️ AI Image Generator & Editor — Installation Guide [Under Demo > Main Demo]
+
+**By Edward Gonzalez (GitHub: [egonzalez99](https://github.com/egonzalez99))**
+
+---
+
+## ✅ Requirements
+
+This Python application uses the **OpenAI API**, `tkinter` for GUI, and several image processing libraries. It provides image generation, editing, and layering functionalities using `DALL·E 2`.
+
+---
+
+## 📦 Step 1: Install Python
+
+Ensure that **Python 3.8 or newer** is installed in your system.
+
+To check:
+
+```Terminal
+python --version
+```
+
+If it's not installed, download it from: [https://www.python.org/downloads](https://www.python.org/downloads)
+
+You can use Visual Studio Code as your IDE: [https://www.python.org/downloads](https://code.visualstudio.com/download)
+
+---
+
+## 📁 Step 2: Set Up a Project Folder
+
+Create and navigate to a new folder OR Use explorer from your IDE:
+
+```Terminal
+mkdir ai-image-editor
+cd ai-image-editor
+```
+
+Save the script as a file called [Example]:  `app.py`.
+
+---
+
+## 📥 Step 3: Create and Activate a Virtual Environment (Optional but Recommended)
+
+```Terminal
+python -m venv venv
+# Windows
+venv\Scripts\activate
+# macOS/Linux
+source venv/bin/activate
+```
+
+---
+
+## 🧩 Step 4: Install Required Packages
+
+Run the following to install the dependencies:
+
+```Terminal
+pip install openai pillow requests
+```
+
+> ⚠️ `tkinter` comes pre-installed with standard Python on most systems. If it’s missing:
+
+* Ubuntu/Debian: `sudo apt-get install python3-tk`
+* macOS (w/ Homebrew): `brew install python-tk`
+
+---
+
+## 🔑 Step 5: Set Your OpenAI API Key
+
+* 🔒 **warning** Note
+
+Please Do **not** share your OpenAI API key publicly. Never share the key openly and save the key somewhere. Consider using environment variables - `.env`/`python -m venv venv` file in running the app.
+
+Edit `app.py` and replace this line:
+
+```python
+client = OpenAI(api_key="api_key_here")
+```
+
+with your OpenAI API key. You can obtain one from here: [https://platform.openai.com/account/api-keys](https://platform.openai.com/api-keys)
+
+```python
+client = OpenAI(api_key="sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+```
+
+You can also set your assistant ID if applicable: You can obtain one from here (Optional): [https://platform.openai.com/assistants](https://platform.openai.com/assistants) 
+> If you’re only using image generation/editing, the assistant ID may not be needed. But it can enhance your images with descriptions and instructions of what you want.
+```python
+assistant_id = "your_assistant_id_here"
+```
+---
+
+## ▶️ Step 6: Run the Application
+
+From your terminal OR Play the run button from your IDE:
+
+```Terminal
+python app.py
+```
+
+You’ll see a GUI window titled **“AI Image Generator & Editor”** with three tabs:
+
+* **Image Generator**
+* **Image Editor**
+* **Image Layering**
+
+---
+
+## 📚 Features
+
+### 1. 🛠️ Image Generator
+
+* Enter a prompt to generate an image with DALL·E 2.
+* Save the generated image.
+
+### 2. 🎨 Image Editor
+
+* Upload two images.
+* Enter a prompt to combine/edit them via DALL·E.
+* Additional tools: resize, rotate, grayscale, sepia.
+
+### 3. 🎭 Image Layering (Mask)
+
+* Use a base image and a mask image.
+* Combines them using DALL·E’s mask API.
+* Save or preview the result.
+
+---
+
+## 📝 Tips
+
+* Use descriptive prompts for better results (e.g., *"Combine both images with a beach background at sunset."*).
+* Ensure both images are valid formats: `.png`, `.jpg`, `.jpeg`, `.gif`, `.bmp`, `.tiff`.
+
+---
+
+## ❓ Troubleshooting
+
+| Problem                  | Solution                                                                                       |
+| ------------------------ | ---------------------------------------------------------------------------------------------- |
+| `ModuleNotFoundError`    | Ensure all packages are installed: `pip install openai pillow requests`                        |
+| App crashes with Tkinter | Install GUI dependencies: `sudo apt install python3-tk`                                        |
+| API limit errors         | Check your OpenAI usage quota at [OpenAI Dashboard](https://platform.openai.com/account/usage) |
+
+---
+
+*Thank You For Our App! ☺️✨*
