@@ -17,19 +17,16 @@ Combining Generative AI with QLab Using Open Sound Control
 
 ---
 
-# 👥 Contributors / Contact
-* [Edward Gonzalez] – Developer, Designer, and AI
-
-* GitHub: @egonzalez99
-
-* Email: bryangonzalez040@gmail.com
----
-
 Here is a complete **installation and setup guide** for the Python script you provided, titled:
 
 # 🖼️ AI Image Generator & Editor — Installation Guide [Under Demo > Main Demo]
 
-**By Edward Gonzalez (GitHub: [egonzalez99](https://github.com/egonzalez99))**
+---
+
+# 👥 Contributors / Contact
+* **Edward Gonzalez** – Developer, Designer & AI | [GitHub Page: @egonzalez99](https://github.com/egonzalez99)
+
+* 📧 Email: [bryangonzalez040@gmail.com](mailto:bryangonzalez040@gmail.com)
 
 ---
 
