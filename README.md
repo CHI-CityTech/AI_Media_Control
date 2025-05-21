@@ -1,3 +1,7 @@
+# Project Overview
+
+The project merges technical research, art, and programming with the goal of bridging artificial intelligence and live entertainment systems. It showcases how automation and performance technology can seamlessly work together to transform modern theatrical and media environments.
+
 # 🖼️📦 AI-with-QLab-using-an-OSC Template
 Combining Generative AI with QLab Using Open Sound Control 
 
