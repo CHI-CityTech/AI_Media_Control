@@ -48,7 +48,7 @@ python --version
 
 If it's not installed, download it from: [https://www.python.org/downloads](https://www.python.org/downloads)
 
-You can use Visual Studio Code as your IDE: [https://www.python.org/downloads](https://code.visualstudio.com/download)
+You can use Visual Studio Code as your IDE: [https://code.visualstudio.com/download](https://code.visualstudio.com/download)
 
 ---
 
