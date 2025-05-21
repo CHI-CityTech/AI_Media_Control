@@ -1,6 +1,14 @@
 # Project Overview
 
-The project merges technical research, art, and programming with the goal of bridging artificial intelligence and live entertainment systems. It showcases how automation and performance technology can seamlessly work together to transform modern theatrical and media environments.
+This project blends technical research, artistic expression, and software development to explore the intersection of artificial intelligence and live entertainment systems. It demonstrates how AI-driven automation can be harmoniously integrated with performance technologies to redefine the boundaries of modern theater, interactive media, and immersive storytelling. By merging creativity with computation, the project highlights innovative pathways for transforming contemporary stagecraft and digital production environments.
+
+This Python application provides a graphical user interface (GUI) for generating, editing, and manipulating images using OpenAI's DALL·E/ChatGPT model:
+
+1. Image Generation – Users can input a text prompt to generate an AI-created image.
+
+2. Image Editing – Users can combine and modify two selected images using text prompts, apply filters (grayscale, sepia), resize, and rotate images.
+   
+3. Image Masking – Users can layer one image over another using a mask, enabling creative overlays and targeted edits.
 
 # 🖼️📦 AI-with-QLab-using-an-OSC Template
 Combining Generative AI with QLab Using Open Sound Control 
