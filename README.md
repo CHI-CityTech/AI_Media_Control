@@ -42,9 +42,9 @@ Ensure that **Python 3.8 or newer** is installed in your system.
 
 To check:
 
-```Terminal
-python --version
-```
+  ```Terminal
+  python --version
+  ```
 
 If it's not installed, download it from: [https://www.python.org/downloads](https://www.python.org/downloads)
 
@@ -52,7 +52,7 @@ If it's not installed, download it from: [https://www.python.org/downloads](http
 
 You can use Visual Studio Code as your IDE: [https://code.visualstudio.com/download](https://code.visualstudio.com/download)
 
-Here is a tutorial in Visual Studio Code's wensite on setting up Python once downloaded (Can Follow This For Steps 1-3): [https://code.visualstudio.com/docs/languages/python](https://code.visualstudio.com/docs/languages/python)
+Here is a tutorial in Visual Studio Code's wensite on setting up Python once downloaded (Can Be Followed Along With Steps 1-3): [https://code.visualstudio.com/docs/languages/python](https://code.visualstudio.com/docs/languages/python)
 
 * Install the Python extension in VS Code (it helps with environment management, syntax, etc.)
 
@@ -62,12 +62,14 @@ Here is a tutorial in Visual Studio Code's wensite on setting up Python once dow
 
 * Create and navigate to a new folder OR Use explorer from your IDE:
 
-```Terminal
-mkdir ai-image-editor
-cd ai-image-editor
-```
+  ```Terminal
+  mkdir ai-image-editor
+  cd ai-image-editor
+  ```
 
-* 📄 Save the AI Media Control script as a file called [For Example]:  `app.py`.
+1. 📄 Save the AI Media Control script as a file called [For Example]:  `app.py`.
+   
+2. Paste the AI Media Control script/code into it your file: [https://github.com/CHI-CityTech/AI_Media_Control/blob/main/applications/main_demo/demo.py](https://github.com/CHI-CityTech/AI_Media_Control/blob/main/applications/main_demo/demo.py) 
 
 ## Step 2 (For Visual Studio Code Users): 
 
@@ -75,32 +77,65 @@ cd ai-image-editor
 
 2. Press Ctrl + Shift + P (or Cmd + Shift + P on macOS) → search for "New Folder" or just:
 
-* Open a terminal: Ctrl + ~
+  * Open a terminal: Ctrl + ~
+  * Run:
 
-* Run:
+    ```Terminal
+    Copy
+    Edit
+    mkdir ai-image-editor
+    cd ai-image-editor
+    ```
 
 3. Go to File > Open Folder... Select and open the new folder you just created for this project.
 
 4. 📄 Add the Script by the follwoing: 
-* In the Explorer panel, right-click the folder → click "New File"
-
-* Name it (optional, but can be named however you want. Must add .py at the end though): app.py
-
-* Paste the AI Media Control script content into it: 
+  * In the Explorer panel, right-click the folder → click "New File"
+  
+  * Name it (optional, but can be named however you want. Must add .py at the end though): app.py
+  
+  * Paste the AI Media Control script/code into it your file: [https://github.com/CHI-CityTech/AI_Media_Control/blob/main/applications/main_demo/demo.py](https://github.com/CHI-CityTech/AI_Media_Control/blob/main/applications/main_demo/demo.py) 
 
 ---
 
 ## 📥 Step 3: Create and Activate a Virtual Environment (Optional but Recommended)
 
-```Terminal
-python -m venv venv
-# Windows
-venv\Scripts\activate
-# macOS/Linux
-source venv/bin/activate
-```
-## Step 3 (For Visual Studio Code Users): 
+  ```Terminal
+  python -m venv venv
+  # Windows
+  venv\Scripts\activate
+  # macOS/Linux
+  source venv/bin/activate
+  ```
 
+## Step 3 (For Visual Studio Code Users): 
+1. Open the integrated terminal (Ctrl + ~)
+
+2. Run:
+
+  ```Terminal
+  Copy
+  Edit
+  python -m venv venv
+  ```
+3. Activate it:
+
+  Windows Users:
+  
+  ```bash
+  Copy
+  Edit
+  venv\Scripts\activate
+  ```
+  macOS/Linux Users:
+
+  ```bash/Terminal
+  Copy
+  Edit
+  source venv/bin/activate
+  ```
+* You’ll see (venv) as folders in your folders on the left side and venv in your bottom right corner.
+  
 ---
 
 ## 🧩 Step 4: Install Required Packages
@@ -113,8 +148,8 @@ pip install openai pillow requests
 
 > ⚠️ `tkinter` comes pre-installed with standard Python on most systems. If it’s missing:
 
-* Ubuntu/Debian: `sudo apt-get install python3-tk`
-* macOS (w/ Homebrew): `brew install python-tk`
+* Ubuntu/Debian (For Linux User): `sudo apt-get install python3-tk`
+* macOS w/ Homebrew (For MacOS Users): `brew install python-tk`
 
 ---
 
@@ -122,15 +157,15 @@ pip install openai pillow requests
 
 * 🔒 **warning** Note
 
-Please Do **not** share your OpenAI API key publicly. Never share the key openly and save the key somewhere. Consider using environment variables - `.env`/`python -m venv venv` file in running the app.
+* Please Do **not** share your OpenAI API key publicly. Never share the key openly and save the key somewhere. Consider using environment variables - `.env`/`python -m venv venv` file in running the app.
 
-Edit `app.py` and replace this line:
+Inside your filename `app.py` replace this line:
 
 ```python
 client = OpenAI(api_key="api_key_here")
 ```
 
-with your OpenAI API key. You can obtain one from here: [https://platform.openai.com/account/api-keys](https://platform.openai.com/api-keys)
+with your own OpenAI API key. You can obtain one from here: [https://platform.openai.com/account/api-keys](https://platform.openai.com/api-keys)
 
 ```python
 client = OpenAI(api_key="sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXX")
@@ -141,11 +176,14 @@ You can also set your assistant ID if applicable: You can obtain one from here (
 ```python
 assistant_id = "your_assistant_id_here"
 ```
+
+* 🔒 **warning** Track your API Key usage to see how much you're using and have to pay. Here's OpenAI usage link: [https://platform.openai.com/usage](https://platform.openai.com/usage)
+  
 ---
 
 ## ▶️ Step 6: Run the Application
 
-From your terminal OR Play the run button from your IDE:
+From your terminal OR Play the run button [▶️] from your IDE (Visual Studio Code):
 
 ```Terminal
 python app.py
@@ -184,6 +222,7 @@ You’ll see a GUI window titled **“AI Image Generator & Editor”** with thre
 
 * Use descriptive prompts for better results (e.g., *"Combine both images with a beach background at sunset."*).
 * Ensure both images are valid formats: `.png`, `.jpg`, `.jpeg`, `.gif`, `.bmp`, `.tiff`.
+* Different resolution sizes could cause problems when running the application.
 
 ---
 
