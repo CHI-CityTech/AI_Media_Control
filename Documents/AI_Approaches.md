@@ -1,4 +1,3 @@
-```markdown
 # **AI Approaches for Investigating QLab Media Control**
 
 1. **Text-to-Image Descriptor Matching (AI-Powered Metadata)**  
@@ -25,4 +24,4 @@
    - Uses **text descriptors + vector similarity + feedback learning**.  
    - Optimizes media selection by **combining the strengths of different approaches**.  
 
-```
+
